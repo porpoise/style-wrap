@@ -15,9 +15,6 @@ StyleWrap.register();
         <h1>padded white text with a cornflowerblue background</h1>
     </style-wrap>
 
-    <!-- ES5 web-component adapter (prebundled in the future) -->
-    <script src="https://unpkg.com/@webcomponents/webcomponentsjs@2.5.0/custom-elements-es5-adapter.js"></script>
-
     <!-- Browser-ready script -->
     <script src=".../path/to/style-wrap/dist/index.min.js"></script>
 
@@ -38,7 +35,10 @@ StyleWrap.register();
         </style-wrap>
     </div>
 
-    <!-- Associated script tags -->
+    <!-- Associated Vue script tags -->
+
+    <!-- Browser-ready script -->
+    <script src=".../path/to/style-wrap/dist/index.min.js"></script>
 
     <script>
         // Register the custom element and make sure vue doesn't treat it like a component.
@@ -68,7 +68,10 @@ StyleWrap.register();
 <body>
     <div id="root"></div>
 
-    <!-- Associated script tags -->
+    <!-- Associated React script tags -->
+
+    <!-- Browser-ready script -->
+    <script src=".../path/to/style-wrap/dist/index.min.js"></script>
 
     <script type="text/babel">
         StyleWrap.register();
