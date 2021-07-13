@@ -1,0 +1,28 @@
+{
+  "name": "css-wrap",
+  "version": "1.0.0",
+  "description": "A framework-agnostic web component to simplify styling HTML elements.",
+  "main": "dist/index.cjs",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/porpoise/css-wrap.git"
+  },
+  "author": "Raghav Misra",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/porpoise/css-wrap/issues"
+  },
+  "homepage": "https://github.com/porpoise/css-wrap#readme",
+  "devDependencies": {
+    "rollup": "^2.53.1",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.30.0",
+    "typescript": "^4.3.5"
+  }
+}
