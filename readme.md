@@ -21,7 +21,7 @@
 </body>
 ```
 
-## Quickstart (VueJS):
+## Quickstart (Vue):
 
 ```html
 <body>
@@ -31,18 +31,12 @@
         </css-wrap>
     </div>
 
-    <!-- Vue development version -->
-    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <!-- Associated script tags -->
 
-    <!-- ES5 web-component adapter (prebundled in the future) -->
-    <script src="https://unpkg.com/@webcomponents/webcomponentsjs@2.5.0/custom-elements-es5-adapter.js"></script>
-
-    <!-- Browser-ready script -->
-    <script src="../dist/index.min.js"></script>
-
-    <!-- Setup Vue instance -->
     <script>
+        // Register the custom element and make sure vue doesn't treat it like a component.
         CSSWrap.register();
+        Vue.config.ignoredElements = ["css-wrap"];
 
         const vm = new Vue({
             el: "#root",
@@ -67,18 +61,8 @@
 <body>
     <div id="root"></div>
 
-    <!-- React/babel development version -->
-    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.24.0/babel.js"></script>
+    <!-- Associated script tags -->
 
-    <!-- ES5 web-component adapter (prebundled in the future) -->
-    <script src="https://unpkg.com/@webcomponents/webcomponentsjs@2.5.0/custom-elements-es5-adapter.js"></script>
-
-    <!-- Browser-ready script -->
-    <script src="../dist/index.min.js"></script>
-
-    <!-- Setup React component -->
     <script type="text/babel">
         CSSWrap.register();
 
