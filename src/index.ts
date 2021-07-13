@@ -1,4 +1,5 @@
-//
+import "./es5-adapter";
+
 export interface IAttributeDescriptor {
     name: string;
     value: string | null;
