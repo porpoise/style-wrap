@@ -35,7 +35,7 @@ export default [
             file: "dist/index.min.js",
             format: "iife",
             sourcemap: true,
-            name: "CSSWrap",
+            name: "StyleWrap",
         },
         plugins: [typescriptPlugin, terserPlugin],
     },

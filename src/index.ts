@@ -1,4 +1,4 @@
-// 
+//
 export interface IAttributeDescriptor {
     name: string;
     value: string | null;
@@ -7,7 +7,7 @@ export interface IAttributeDescriptor {
 // Don't update css for these attributes:
 const ignoredAttributes = ["id", "class", "style"];
 
-export default class CSSWrap extends HTMLElement {
+export default class StyleWrap extends HTMLElement {
     // The attributes NamedNodeMap mapped to an Array:
     get attributeMap(): IAttributeDescriptor[] {
         const attributeList: IAttributeDescriptor[] = [];
@@ -72,6 +72,6 @@ export default class CSSWrap extends HTMLElement {
 
     // Registers the custom element globally:
     static register(tagName?: string) {
-        customElements.define(tagName || "css-wrap", this);
+        customElements.define(tagName || "style-wrap", this);
     }
 }

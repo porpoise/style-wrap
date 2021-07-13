@@ -1,22 +1,29 @@
-# `css-wrap`
+# `style-wrap`
+
+Framework-agnostic element styling
+
+```ts
+import StyleWrap from "style-wrap";
+StyleWrap.register();
+```
 
 ## Quickstart (Vanilla JS):
 
 ```html
 <body>
-    <css-wrap color="white" background="cornflowerblue" padding="8px">
+    <style-wrap color="white" background="cornflowerblue" padding="8px">
         <h1>padded white text with a cornflowerblue background</h1>
-    </css-wrap>
+    </style-wrap>
 
     <!-- ES5 web-component adapter (prebundled in the future) -->
     <script src="https://unpkg.com/@webcomponents/webcomponentsjs@2.5.0/custom-elements-es5-adapter.js"></script>
 
     <!-- Browser-ready script -->
-    <script src=".../path/to/css-wrap/dist/index.min.js"></script>
+    <script src=".../path/to/style-wrap/dist/index.min.js"></script>
 
     <!-- Register the wrapper -->
     <script>
-        CSSWrap.register();
+        StyleWrap.register();
     </script>
 </body>
 ```
@@ -26,17 +33,17 @@
 ```html
 <body>
     <div id="root">
-        <css-wrap :color="color" :background="background" :padding="padding">
+        <style-wrap :color="color" :background="background" :padding="padding">
             <h1>{{ text }}</h1>
-        </css-wrap>
+        </style-wrap>
     </div>
 
     <!-- Associated script tags -->
 
     <script>
         // Register the custom element and make sure vue doesn't treat it like a component.
-        CSSWrap.register();
-        Vue.config.ignoredElements = ["css-wrap"];
+        StyleWrap.register();
+        Vue.config.ignoredElements = ["style-wrap"];
 
         const vm = new Vue({
             el: "#root",
@@ -64,7 +71,7 @@
     <!-- Associated script tags -->
 
     <script type="text/babel">
-        CSSWrap.register();
+        StyleWrap.register();
 
         function App() {
             const [padding, setPadding] = React.useState("8px");
@@ -75,13 +82,13 @@
             const text = `${padding} padded ${color} text with a ${background} background`;
 
             return (
-                <css-wrap
+                <style-wrap
                     padding={padding}
                     color={color}
                     background={background}
                 >
                     <h1>{text}</h1>
-                </css-wrap>
+                </style-wrap>
             );
         }
 
