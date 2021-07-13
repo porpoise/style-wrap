@@ -7,7 +7,7 @@ export interface IAttributeDescriptor {
 // Don't update css for these attributes:
 const ignoredAttributes = ["id", "class", "style"];
 
-export class CSSWrap extends HTMLElement {
+export default class CSSWrap extends HTMLElement {
     // The attributes NamedNodeMap mapped to an Array:
     get attributeMap(): IAttributeDescriptor[] {
         const attributeList: IAttributeDescriptor[] = [];
