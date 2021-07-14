@@ -1,11 +1,16 @@
 import GlobalStyleManager from "./global-style-manager";
-import modifierMap from "./modifier-map";
+import builtinModifiers, { ModifierMapT } from "./builtin-modifiers";
 
 import "./es5-adapter";
 
-export interface IAttributeDescriptor {
+interface IAttributeDescriptor {
     name: string;
     value: string | null;
+}
+
+export interface IStyleWrapConfig {
+    globals?: Record<string, string>;
+    modifiers?: Partial<ModifierMapT>;
 }
 
 // Don't update css for these attributes:
@@ -13,6 +18,7 @@ const ignoredAttributes = ["id", "class", "style"];
 
 export default class StyleWrap extends HTMLElement {
     static globalStyles = new GlobalStyleManager();
+    static modifiers = builtinModifiers;
 
     // The attributes NamedNodeMap mapped to an Array:
     get attributeMap(): IAttributeDescriptor[] {
@@ -50,14 +56,14 @@ export default class StyleWrap extends HTMLElement {
         const { rule: ruleModifiedRule, value: ruleModifiedValue } =
             ruleModifiers.reduce(
                 (current, modifier) =>
-                    modifierMap.name[modifier]?.(current) || current,
+                    StyleWrap.modifiers.name[modifier]?.(current) || current,
                 { rule, value: parsedValue }
             );
 
         const { rule: valueModifiedRule, value: valueModifiedValue } =
             valueModifiers.reduce(
                 (current, modifier) =>
-                    modifierMap.value[modifier]?.(current) || current,
+                    StyleWrap.modifiers.value[modifier]?.(current) || current,
                 { rule: ruleModifiedRule, value: ruleModifiedValue }
             );
 
@@ -98,10 +104,20 @@ export default class StyleWrap extends HTMLElement {
     }
 
     // Registers the custom element globally:
-    static register(variables?: Record<string, string>) {
-        if (variables) {
-            Object.entries(variables).forEach(([name, value]) =>
+    static register(options: IStyleWrapConfig) {
+        if (options.globals) {
+            Object.entries(options.globals).forEach(([name, value]) =>
                 StyleWrap.globalStyles.set(name, value)
+            );
+        }
+
+        if (options.modifiers) {
+            Object.entries(options.modifiers).forEach(([key, map]) =>
+                Object.entries(map).forEach(
+                    ([name, value]) =>
+                        (StyleWrap.modifiers[key as "name" | "value"][name] =
+                            value)
+                )
             );
         }
 

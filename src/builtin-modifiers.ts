@@ -3,12 +3,14 @@ export interface IStylePropertyDescriptor {
     value: string;
 }
 
-type ModifierMapT = Record<
-    string,
-    (i: IStylePropertyDescriptor) => IStylePropertyDescriptor
+type ModifierT = (i: IStylePropertyDescriptor) => IStylePropertyDescriptor;
+
+export type ModifierMapT = Record<
+    "name" | "value",
+    Partial<Record<string, ModifierT>>
 >;
 
-export default {
+const builtinModifiers: ModifierMapT = {
     name: {
         var({ rule, value }) {
             return {
@@ -25,4 +27,6 @@ export default {
             };
         },
     },
-} as Record<"name" | "value", ModifierMapT>;
+};
+
+export default builtinModifiers;

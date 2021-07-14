@@ -1,6 +1,6 @@
 export default class GlobalStyleManager {
     styleElement: HTMLStyleElement = document.createElement("style");
-    startNode: Text = document.createTextNode("style-wrap {");
+    startNode: Text = document.createTextNode("style-wrap{");
     endNode: Text = document.createTextNode("}");
 
     globalNodeMap: Record<string, Text> = {};
@@ -16,12 +16,11 @@ export default class GlobalStyleManager {
             return this.globalNodeMap[name].nodeValue
                 ?.split(":")[1]
                 .split(";")[0]
-                .trim();
         }
     }
 
     set(name: string, value: string) {
-        const variableString = `--${name}: ${value};`;
+        const variableString = `--${name}:${value};`;
 
         if (this.globalNodeMap[name]) {
             this.styleElement.removeChild(this.globalNodeMap[name]);
