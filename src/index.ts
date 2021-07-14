@@ -1,3 +1,6 @@
+import GlobalStyleManager from "./global-style-manager";
+import modifierMap from "./modifier-map";
+
 import "./es5-adapter";
 
 export interface IAttributeDescriptor {
@@ -9,6 +12,8 @@ export interface IAttributeDescriptor {
 const ignoredAttributes = ["id", "class", "style"];
 
 export default class StyleWrap extends HTMLElement {
+    static globalStyles = new GlobalStyleManager();
+
     // The attributes NamedNodeMap mapped to an Array:
     get attributeMap(): IAttributeDescriptor[] {
         const attributeList: IAttributeDescriptor[] = [];
@@ -34,11 +39,32 @@ export default class StyleWrap extends HTMLElement {
     setStyleProperty({ name, value }: IAttributeDescriptor) {
         if (ignoredAttributes.indexOf(name) !== -1) return;
 
-        const formattedName = name.startsWith("var-")
-            ? name.replace("var-", "--")
-            : name;
+        const ruleModifiers = name.split(":");
+        const rule = ruleModifiers.pop();
 
-        this.targetElement?.style.setProperty(formattedName, value);
+        const valueModifiers = (value || "").split(":");
+        const parsedValue = valueModifiers.pop()?.trim();
+
+        if (!(rule && parsedValue)) return;
+
+        const { rule: ruleModifiedRule, value: ruleModifiedValue } =
+            ruleModifiers.reduce(
+                (current, modifier) =>
+                    modifierMap.name[modifier]?.(current) || current,
+                { rule, value: parsedValue }
+            );
+
+        const { rule: valueModifiedRule, value: valueModifiedValue } =
+            valueModifiers.reduce(
+                (current, modifier) =>
+                    modifierMap.value[modifier]?.(current) || current,
+                { rule: ruleModifiedRule, value: ruleModifiedValue }
+            );
+
+        this.targetElement?.style.setProperty(
+            valueModifiedRule,
+            valueModifiedValue
+        );
     }
 
     // Set every style property from the attributes at once:
@@ -72,7 +98,13 @@ export default class StyleWrap extends HTMLElement {
     }
 
     // Registers the custom element globally:
-    static register(tagName?: string) {
-        customElements.define(tagName || "style-wrap", this);
+    static register(variables?: Record<string, string>) {
+        if (variables) {
+            Object.entries(variables).forEach(([name, value]) =>
+                StyleWrap.globalStyles.set(name, value)
+            );
+        }
+
+        customElements.define("style-wrap", this);
     }
 }
