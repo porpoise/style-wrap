@@ -116,6 +116,12 @@ If you directly need to style a `style-wrap`, you can add an `id`, `class`, or `
 
 This is similar to Svelte's [`--style-props`](https://svelte.dev/docs#style_props), but the existence of a wrapper element is explicit in our case, rather than implicitly added at build time.
 
+## Disclaimer:
+
+This concept of attribute-based CSS rules may seem like a budget version of TailwindCSS (lol). However, this library is in no way meant to be a Tailwind or CSS replacement. Rather, it's meant to extend regular CSS (or Tailwind) with that sprinkle of reactivity that allows for customization and extensibility.
+
+In principle, my recommendation for this library is to continue writing CSS (or Tailwind) wherever you can, and use this wherever you need to wield the power of CSS variables or want to write dynamic components where the CSS is as customizable as the JavaScript data (which is why this library coexists beautifully with frameworks such as React and Vue).
+
 # Enjoy!
 
 Leave star pls. <3
