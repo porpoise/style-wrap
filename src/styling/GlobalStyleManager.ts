@@ -1,6 +1,6 @@
 export default class GlobalStyleManager {
     styleElement: HTMLStyleElement = document.createElement("style");
-    startNode: Text = document.createTextNode("style-wrap{");
+    startNode: Text = document.createTextNode(":root{");
     endNode: Text = document.createTextNode("}");
 
     globalNodeMap: Record<string, Text> = {};
