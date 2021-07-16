@@ -73,7 +73,7 @@ Create an attribute on the `style-wrap` element using the **`_`** prefix (simila
 ```css
 button {
     background: white;
-    color: var(--active); // use the CSS variable syntax to access the variable.
+    color: var(--active); /* use the CSS variable syntax to access the variable. */
 }
 
 button:hover {
