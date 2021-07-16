@@ -1,7 +1,8 @@
-import GlobalStyleManager from "./global-style-manager";
-import builtinModifiers, { ModifierMapT } from "./builtin-modifiers";
+import ElementStyleManager from "./styling/ElementStyleManager";
+import GlobalStyleManager from "./styling/GlobalStyleManager";
+import generateId from "./utils/generateId";
 
-import "./es5-adapter";
+import "./utils/es5Adapter";
 
 interface IAttributeDescriptor {
     name: string;
@@ -10,7 +11,6 @@ interface IAttributeDescriptor {
 
 export interface IStyleWrapConfig {
     globals?: Record<string, string>;
-    modifiers?: Partial<ModifierMapT>;
 }
 
 // Don't update css for these attributes:
@@ -18,7 +18,9 @@ const ignoredAttributes = ["id", "class", "style"];
 
 export default class StyleWrap extends HTMLElement {
     static globalStyles = new GlobalStyleManager();
-    static modifiers = builtinModifiers;
+
+    stylingId = generateId().toString();
+    elementStyles?: ElementStyleManager;
 
     // The attributes NamedNodeMap mapped to an Array:
     get attributeMap(): IAttributeDescriptor[] {
@@ -41,36 +43,59 @@ export default class StyleWrap extends HTMLElement {
         return this.firstElementChild as HTMLElement | null;
     }
 
+    // Initialize the ElementStyleManager to point to the target element.
+    setupElementStyles() {
+        if (!this.targetElement) return;
+
+        if (!this.elementStyles) {
+            this.elementStyles = new ElementStyleManager(
+                this.targetElement?.nodeName.toLowerCase(),
+                this.stylingId
+            );
+        } else {
+            this.elementStyles.updatePrefix(
+                this.targetElement?.nodeName.toLowerCase(),
+                this.stylingId
+            );
+        }
+    }
+
+    // Setup the target element to be styled:
+    setupTargetElement() {
+        if (!this.targetElement) return;
+
+        this.setupElementStyles();
+
+        this.targetElement.dataset.styleWrapId = this.stylingId;
+
+        this.setAllStyleProperties();
+    }
+
     // Validate and set a style rule on the target element:
     setStyleProperty({ name, value }: IAttributeDescriptor) {
-        if (ignoredAttributes.indexOf(name) !== -1) return;
+        if (ignoredAttributes.indexOf(name) !== -1 || !this.targetElement)
+            return;
 
-        const ruleModifiers = name.split(":");
-        const rule = ruleModifiers.pop();
+        if (!this.elementStyles) this.setupElementStyles();
 
-        const valueModifiers = (value || "").split(":");
-        const parsedValue = valueModifiers.pop()?.trim();
+        // Check for a state, like "hover", "focus", "etc"
+        let [rule, state] = name.trim().split(".");
 
-        if (!(rule && parsedValue)) return;
+        // Trim the value:
+        let finalValue = value?.trim() || "";
 
-        const { rule: ruleModifiedRule, value: ruleModifiedValue } =
-            ruleModifiers.reduce(
-                (current, modifier) =>
-                    StyleWrap.modifiers.name[modifier]?.(current) || current,
-                { rule, value: parsedValue }
-            );
+        // Variable setter (rule starts with "_"):
+        if (rule.startsWith("_")) {
+            rule = rule.replace("_", "--");
+        }
 
-        const { rule: valueModifiedRule, value: valueModifiedValue } =
-            valueModifiers.reduce(
-                (current, modifier) =>
-                    StyleWrap.modifiers.value[modifier]?.(current) || current,
-                { rule: ruleModifiedRule, value: ruleModifiedValue }
-            );
+        // Variable getter (value starts with "_"):
+        if (finalValue.startsWith("_")) {
+            finalValue = `var(${finalValue.replace("_", "--")})`;
+        }
 
-        this.targetElement?.style.setProperty(
-            valueModifiedRule,
-            valueModifiedValue
-        );
+        // Set the CSS property for the specified state (or no state/default style):
+        this.elementStyles?.set(state || "", rule, finalValue);
     }
 
     // Set every style property from the attributes at once:
@@ -90,7 +115,7 @@ export default class StyleWrap extends HTMLElement {
                         value: this.getAttribute(mutation.attributeName),
                     });
                 } else if (mutation.type === "childList") {
-                    this.setAllStyleProperties();
+                    this.setupTargetElement();
                 }
             });
         });
@@ -100,7 +125,16 @@ export default class StyleWrap extends HTMLElement {
 
     // Style the child node when added to DOM:
     connectedCallback() {
-        this.setAllStyleProperties();
+        this.setupTargetElement();
+    }
+
+    // Remove the element stylesheet on unmount:
+    disconnectedCallback() {
+        if (!this.elementStyles) return;
+        
+        document.head.removeChild(this.elementStyles?.styleElement);
+
+        this.elementStyles = undefined;
     }
 
     // Registers the custom element globally:
@@ -108,16 +142,6 @@ export default class StyleWrap extends HTMLElement {
         if (options.globals) {
             Object.entries(options.globals).forEach(([name, value]) =>
                 StyleWrap.globalStyles.set(name, value)
-            );
-        }
-
-        if (options.modifiers) {
-            Object.entries(options.modifiers).forEach(([key, map]) =>
-                Object.entries(map).forEach(
-                    ([name, value]) =>
-                        (StyleWrap.modifiers[key as "name" | "value"][name] =
-                            value)
-                )
             );
         }
 

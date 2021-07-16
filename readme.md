@@ -1,101 +1,121 @@
 # `style-wrap`
 
-Framework-agnostic element styling
+Framework-agnostic element styling.
 
-```ts
+`npm i style-wrap`
+
+```js
 import StyleWrap from "style-wrap";
-StyleWrap.register();
+StyleWrap.register(/* options */);
 ```
 
-## Quickstart (Vanilla JS):
+## How it works:
+
+Basically the element you wanna style, you wrap in a `style-wrap` element. Next, you can add attributes to the `style-wrap` which will target the element it wraps.
 
 ```html
-<body>
-    <style-wrap color="white" background="cornflowerblue" padding="8px">
-        <h1>padded white text with a cornflowerblue background</h1>
-    </style-wrap>
-
-    <!-- Browser-ready script -->
-    <script src=".../path/to/style-wrap/dist/index.min.js"></script>
-
-    <!-- Register the wrapper -->
-    <script>
-        StyleWrap.register();
-    </script>
-</body>
+<style-wrap id="wrap" color="red" color.hover="blue" padding="8px">
+    <p>red colored text with 8px padding</p>
+</style-wrap>
 ```
 
-## Quickstart (Vue):
+These attributes can be changed later (possibly with `setAttribute` or reactive data binding using a framework like React or Vue):
+
+```js
+document.getElementById("wrap").setAttribute("color", "green"); // color: green; by default
+document.getElementById("wrap").setAttribute("color.hover", "pink"); // color: pink; on hover
+```
+
+## Variable system:
+
+`style-wrap` has first-class support for **reactive** CSS variables, allowing one to easily create and update structured, continuous design systems.
+
+### Global variables:
+
+You can declare global variables in the register function:
+
+```js
+StyleWrap.register({
+    globals: {
+        primary: "#003366",
+        success: "forestgreen",
+        link: "cornflowerblue",
+    },
+});
+```
+
+You can then make use of these globals in your `style-wrap` element using the **`_`** prefix (kinda like **`$`** in SASS):
 
 ```html
-<body>
-    <div id="root">
-        <style-wrap :color="color" :background="background" :padding="padding">
-            <h1>{{ text }}</h1>
-        </style-wrap>
-    </div>
-
-    <!-- Associated Vue script tags -->
-
-    <!-- Browser-ready script -->
-    <script src=".../path/to/style-wrap/dist/index.min.js"></script>
-
-    <script>
-        // Register the custom element and make sure vue doesn't treat it like a component.
-        StyleWrap.register();
-        Vue.config.ignoredElements = ["style-wrap"];
-
-        const vm = new Vue({
-            el: "#root",
-            data: {
-                color: "white",
-                background: "cornflowerblue",
-                padding: "8px",
-            },
-            computed: {
-                text() {
-                    return `${this.padding} padded ${this.color} text with a ${this.background} background`;
-                },
-            },
-        });
-    </script>
-</body>
+<style-wrap color="_primary">
+    <p>this has primary text color</p>
+</style-wrap>
 ```
 
-## Quickstart (React):
+If you still have access to the `StyleWrap` class, you can change the values of global variables on the fly, and the changes will reflect everywhere they're used.
+
+```js
+StyleWrap.globalStyles.set("primary", "black");
+```
+
+### Not-so-global variables:
+
+You can declare new variables within `style-wrap` elements and use these directly within your CSS, this is useful for reusable components where only a few CSS rules are customizable.
+
+Create an attribute on the `style-wrap` element using the **`_`** prefix (similar to above):
 
 ```html
-<body>
-    <div id="root"></div>
-
-    <!-- Associated React script tags -->
-
-    <!-- Browser-ready script -->
-    <script src=".../path/to/style-wrap/dist/index.min.js"></script>
-
-    <script type="text/babel">
-        StyleWrap.register();
-
-        function App() {
-            const [padding, setPadding] = React.useState("8px");
-            const [color, setColor] = React.useState("white");
-            const [background, setBackground] =
-                React.useState("cornflowerblue");
-
-            const text = `${padding} padded ${color} text with a ${background} background`;
-
-            return (
-                <style-wrap
-                    padding={padding}
-                    color={color}
-                    background={background}
-                >
-                    <h1>{text}</h1>
-                </style-wrap>
-            );
-        }
-
-        ReactDOM.render(<App />, document.querySelector("#root"));
-    </script>
-</body>
+<style-wrap _active="cornflowerblue">
+    <button>hello im dynamic to the _active variable</button>
+</style-wrap>
 ```
+
+```css
+button {
+    background: white;
+    color: var(--active); // use the CSS variable syntax to access the variable.
+}
+
+button:hover {
+    color: white;
+    background: var(--active);
+}
+```
+
+Now I can create differently-styled buttons with minimal code in the markup itself. While I could make a custom class for each possible combination, over `style-wrap`, this approach allows for easier extensibility, while still keeping code clean and concise.
+
+Lastly, you can use these variables exactly how you used global variables:
+
+```html
+<style-wrap>
+    <a _active-color="red" background="_active-color"> hey! </a>
+</style-wrap>
+```
+
+## States:
+
+An intuitive way to style different CSS states (such as `:hover`, `:focus`, etc...):
+
+```html
+<style-wrap
+    color="gray"
+    color.hover="black"
+    transition="color 250ms ease-in-out"
+>
+    <a> hover me to change the color! </a>
+</style-wrap>
+```
+
+## Quirks:
+
+Since this is a custom element, over a JavaScript component, `style-wrap`s have an effect on the outputted HTML markup. In other words, you **will see** `<style-wrap>` tags in your devtools/inspector tab. 
+
+As a result, if you're not careful to remember this, you could ignore that they are there and break the flow of your markup.
+
+If you directly need to style a `style-wrap`, you can add an `id`, `class`, or `style` attribute to it. These 3 attributes are ignored and won't add CSS rules to the child element.
+
+This is similar to Svelte's [`--style-props`](https://svelte.dev/docs#style_props), but the existence of a wrapper element is explicit in our case, rather than implicitly added at build time.
+
+# Enjoy!
+
+Leave star pls. <3

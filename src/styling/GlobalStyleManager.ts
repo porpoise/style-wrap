@@ -13,9 +13,11 @@ export default class GlobalStyleManager {
 
     get(name: string) {
         if (this.globalNodeMap[name]) {
-            return this.globalNodeMap[name].nodeValue
-                ?.split(":")[1]
-                .split(";")[0]
+            const [_rule, ...valuePieces] = this.globalNodeMap[
+                name
+            ]?.nodeValue?.split(":") || [null];
+
+            return valuePieces.length > 0 ? valuePieces.join(":") : undefined;
         }
     }
 
