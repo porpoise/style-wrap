@@ -3,6 +3,7 @@ import GlobalStyleManager from "./styling/GlobalStyleManager";
 import generateId from "./utils/generateId";
 
 import "./utils/es5Adapter";
+import isValidAttribute from "./utils/isValidAttribute";
 
 interface IAttributeDescriptor {
     name: string;
@@ -12,9 +13,6 @@ interface IAttributeDescriptor {
 export interface IStyleWrapConfig {
     globals?: Record<string, string>;
 }
-
-// Don't update css for these attributes:
-const ignoredAttributes = ["id", "class", "style"];
 
 export default class StyleWrap extends HTMLElement {
     static globalStyles = new GlobalStyleManager();
@@ -73,8 +71,7 @@ export default class StyleWrap extends HTMLElement {
 
     // Validate and set a style rule on the target element:
     setStyleProperty({ name, value }: IAttributeDescriptor) {
-        if (ignoredAttributes.indexOf(name) !== -1 || !this.targetElement)
-            return;
+        if (!isValidAttribute(name) || !this.targetElement) return;
 
         if (!this.elementStyles) this.setupElementStyles();
 
@@ -131,7 +128,7 @@ export default class StyleWrap extends HTMLElement {
     // Remove the element stylesheet on unmount:
     disconnectedCallback() {
         if (!this.elementStyles) return;
-        
+
         document.head.removeChild(this.elementStyles?.styleElement);
 
         this.elementStyles = undefined;
