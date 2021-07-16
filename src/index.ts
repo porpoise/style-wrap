@@ -128,6 +128,15 @@ export default class StyleWrap extends HTMLElement {
         this.setupTargetElement();
     }
 
+    // Remove the element stylesheet on unmount:
+    disconnectedCallback() {
+        if (!this.elementStyles) return;
+        
+        document.head.removeChild(this.elementStyles?.styleElement);
+
+        this.elementStyles = undefined;
+    }
+
     // Registers the custom element globally:
     static register(options: IStyleWrapConfig) {
         if (options.globals) {
