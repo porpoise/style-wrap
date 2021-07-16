@@ -1,6 +1,5 @@
 import ElementStyleManager from "./styling/ElementStyleManager";
 import GlobalStyleManager from "./styling/GlobalStyleManager";
-import builtinModifiers, { ModifierMapT } from "./utils/builtinModifiers";
 import generateId from "./utils/generateId";
 
 import "./utils/es5Adapter";
@@ -12,7 +11,6 @@ interface IAttributeDescriptor {
 
 export interface IStyleWrapConfig {
     globals?: Record<string, string>;
-    modifiers?: Partial<ModifierMapT>;
 }
 
 // Don't update css for these attributes:
@@ -20,7 +18,6 @@ const ignoredAttributes = ["id", "class", "style"];
 
 export default class StyleWrap extends HTMLElement {
     static globalStyles = new GlobalStyleManager();
-    static modifiers = builtinModifiers;
 
     stylingId = generateId().toString();
     elementStyles?: ElementStyleManager;
@@ -74,37 +71,26 @@ export default class StyleWrap extends HTMLElement {
         if (ignoredAttributes.indexOf(name) !== -1 || !this.targetElement)
             return;
 
-        if (!this.elementStyles) {
-            this.setupElementStyles();
+        if (!this.elementStyles) this.setupElementStyles();
+
+        // Check for a state, like "hover", "focus", "etc"
+        let [rule, state] = name.trim().split(".");
+
+        // Trim the value:
+        let finalValue = value?.trim() || "";
+
+        // Variable setter (rule starts with "_"):
+        if (rule.startsWith("_")) {
+            rule = rule.replace("_", "--");
         }
 
-        const ruleModifiers = name.split(":");
-        const [rule, state] = ruleModifiers.pop()?.split(".") || [];
+        // Variable getter (value starts with "_"):
+        if (finalValue.startsWith("_")) {
+            finalValue = `var(${finalValue.replace("_", "--")})`;
+        }
 
-        const valueModifiers = (value || "").split(":");
-        const parsedValue = valueModifiers.pop()?.trim();
-
-        if (!(rule && parsedValue)) return;
-
-        const { rule: ruleModifiedRule, value: ruleModifiedValue } =
-            ruleModifiers.reduce(
-                (current, modifier) =>
-                    StyleWrap.modifiers.name[modifier]?.(current) || current,
-                { rule, value: parsedValue }
-            );
-
-        const { rule: valueModifiedRule, value: valueModifiedValue } =
-            valueModifiers.reduce(
-                (current, modifier) =>
-                    StyleWrap.modifiers.value[modifier]?.(current) || current,
-                { rule: ruleModifiedRule, value: ruleModifiedValue }
-            );
-
-        this.elementStyles?.set(
-            state || "",
-            valueModifiedRule,
-            valueModifiedValue
-        );
+        // Set the CSS property for the specified state (or no state/default style):
+        this.elementStyles?.set(state || "", rule, finalValue);
     }
 
     // Set every style property from the attributes at once:
@@ -142,16 +128,6 @@ export default class StyleWrap extends HTMLElement {
         if (options.globals) {
             Object.entries(options.globals).forEach(([name, value]) =>
                 StyleWrap.globalStyles.set(name, value)
-            );
-        }
-
-        if (options.modifiers) {
-            Object.entries(options.modifiers).forEach(([key, map]) =>
-                Object.entries(map).forEach(
-                    ([name, value]) =>
-                        (StyleWrap.modifiers[key as "name" | "value"][name] =
-                            value)
-                )
             );
         }
 
