@@ -56,4 +56,21 @@ export default class ElementStyleManager {
             this.set(state, name, value);
         }
     }
+
+    updatePrefix(elementType: string, datasetIdentifier: string) {
+        this.prefix = `style-wrap > ${elementType}[data-style-wrap-id="${datasetIdentifier}"]`;
+
+        for (const state in this.stateMap) {
+            const newStartNode = document.createTextNode(
+                `${this.prefix}${state === "" ? "" : `:${state}`}{`
+            );
+
+            this.styleElement.replaceChild(
+                newStartNode,
+                this.stateMap[state].startNode
+            );
+
+            this.stateMap[state].startNode = newStartNode;
+        }
+    }
 }

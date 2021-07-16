@@ -47,19 +47,24 @@ export default class StyleWrap extends HTMLElement {
     setupElementStyles() {
         if (!this.targetElement) return;
 
-        this.elementStyles = new ElementStyleManager(
-            this.targetElement?.nodeName.toLowerCase(),
-            this.stylingId
-        );
+        if (!this.elementStyles) {
+            this.elementStyles = new ElementStyleManager(
+                this.targetElement?.nodeName.toLowerCase(),
+                this.stylingId
+            );
+        } else {
+            this.elementStyles.updatePrefix(
+                this.targetElement?.nodeName.toLowerCase(),
+                this.stylingId
+            );
+        }
     }
 
     // Setup the target element to be styled:
     setupTargetElement() {
         if (!this.targetElement) return;
 
-        if (!this.elementStyles) {
-            this.setupElementStyles();
-        }
+        this.setupElementStyles();
 
         this.targetElement.dataset.styleWrapId = this.stylingId;
 
