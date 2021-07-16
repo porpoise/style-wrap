@@ -1,7 +1,9 @@
-import GlobalStyleManager from "./global-style-manager";
-import builtinModifiers, { ModifierMapT } from "./builtin-modifiers";
+import ElementStyleManager from "./styling/ElementStyleManager";
+import GlobalStyleManager from "./styling/GlobalStyleManager";
+import builtinModifiers, { ModifierMapT } from "./utils/builtinModifiers";
+import generateId from "./utils/generateId";
 
-import "./es5-adapter";
+import "./utils/es5Adapter";
 
 interface IAttributeDescriptor {
     name: string;
@@ -19,6 +21,9 @@ const ignoredAttributes = ["id", "class", "style"];
 export default class StyleWrap extends HTMLElement {
     static globalStyles = new GlobalStyleManager();
     static modifiers = builtinModifiers;
+
+    stylingId = generateId().toString();
+    elementStyles?: ElementStyleManager;
 
     // The attributes NamedNodeMap mapped to an Array:
     get attributeMap(): IAttributeDescriptor[] {
@@ -41,12 +46,40 @@ export default class StyleWrap extends HTMLElement {
         return this.firstElementChild as HTMLElement | null;
     }
 
+    // Initialize the ElementStyleManager to point to the target element.
+    setupElementStyles() {
+        if (!this.targetElement) return;
+
+        this.elementStyles = new ElementStyleManager(
+            this.targetElement?.nodeName.toLowerCase(),
+            this.stylingId
+        );
+    }
+
+    // Setup the target element to be styled:
+    setupTargetElement() {
+        if (!this.targetElement) return;
+
+        if (!this.elementStyles) {
+            this.setupElementStyles();
+        }
+
+        this.targetElement.dataset.styleWrapId = this.stylingId;
+
+        this.setAllStyleProperties();
+    }
+
     // Validate and set a style rule on the target element:
     setStyleProperty({ name, value }: IAttributeDescriptor) {
-        if (ignoredAttributes.indexOf(name) !== -1) return;
+        if (ignoredAttributes.indexOf(name) !== -1 || !this.targetElement)
+            return;
+
+        if (!this.elementStyles) {
+            this.setupElementStyles();
+        }
 
         const ruleModifiers = name.split(":");
-        const rule = ruleModifiers.pop();
+        const [rule, state] = ruleModifiers.pop()?.split(".") || [];
 
         const valueModifiers = (value || "").split(":");
         const parsedValue = valueModifiers.pop()?.trim();
@@ -67,7 +100,8 @@ export default class StyleWrap extends HTMLElement {
                 { rule: ruleModifiedRule, value: ruleModifiedValue }
             );
 
-        this.targetElement?.style.setProperty(
+        this.elementStyles?.set(
+            state || "",
             valueModifiedRule,
             valueModifiedValue
         );
@@ -90,7 +124,7 @@ export default class StyleWrap extends HTMLElement {
                         value: this.getAttribute(mutation.attributeName),
                     });
                 } else if (mutation.type === "childList") {
-                    this.setAllStyleProperties();
+                    this.setupTargetElement();
                 }
             });
         });
@@ -100,7 +134,7 @@ export default class StyleWrap extends HTMLElement {
 
     // Style the child node when added to DOM:
     connectedCallback() {
-        this.setAllStyleProperties();
+        this.setupTargetElement();
     }
 
     // Registers the custom element globally:
