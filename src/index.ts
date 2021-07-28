@@ -76,7 +76,7 @@ export default class StyleWrap extends HTMLElement {
         if (!this.elementStyles) this.setupElementStyles();
 
         // Check for a state, like "hover", "focus", "etc"
-        let [rule, state] = name.trim().split(".");
+        let [rule, state] = name.trim().split(":");
 
         // Trim the value:
         let finalValue = value?.trim() || "";

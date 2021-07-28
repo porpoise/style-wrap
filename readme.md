@@ -99,7 +99,7 @@ An intuitive way to style different CSS states (such as `:hover`, `:focus`, etc.
 ```html
 <style-wrap
     color="gray"
-    color.hover="black"
+    color:hover="black"
     transition="color 250ms ease-in-out"
 >
     <a> hover me to change the color! </a>
